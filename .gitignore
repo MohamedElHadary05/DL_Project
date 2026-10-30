@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+mlruns/
+outputs/*
+!outputs/.gitkeep
+*.pt
+*.pth
+data/
+.DS_Store
