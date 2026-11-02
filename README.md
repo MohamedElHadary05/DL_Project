@@ -31,6 +31,18 @@ Inference on one image (top-5 species):
 
     python -m src.cli predict --task classification --image path/to/bird.jpg --checkpoint outputs/checkpoints/<run_name>.pt
 
+## Hyperparameter tuning
+
+Grid search and random search over the scratch CNN, same budget and bounds
+(search space in `configs/tune_scratch.yaml`):
+
+    python -m src.cli tune --task classification --config configs/tune_scratch.yaml --method both
+
+Per-trial results go to `outputs/tuning/{grid,random}_results.csv`, the comparison
+(best score, trials, time to best) to `outputs/tuning/comparison.csv`, plus
+`best_so_far.png` and `grid_heatmap.png`. Rerunning the command skips finished
+trials, so an interrupted search resumes where it stopped.
+
 ## Experiment tracking
 
 Every run logs its config, per-epoch metrics, curves and checkpoint to MLflow. Browse them with:

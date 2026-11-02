@@ -142,7 +142,8 @@ def train_classifier(cfg, run_name=None):
         curves = plot_curves(history, Path("outputs/plots") / f"{run_name}_curves.png")
         mlflow.log_metric("best_val_accuracy", best_acc)
         mlflow.log_artifact(str(curves))
-        mlflow.log_artifact(str(ckpt_path))
+        if cfg.get("log_checkpoint", True):  # tuning trials skip the extra 19 MB copy
+            mlflow.log_artifact(str(ckpt_path))
 
     print(f"best val accuracy {best_acc:.3f} -> {ckpt_path}")
     return ckpt_path, best_acc

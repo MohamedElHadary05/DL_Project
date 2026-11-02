@@ -22,6 +22,20 @@ def cmd_train(args):
     train_classifier(cfg, run_name=args.run_name)
 
 
+def cmd_tune(args):
+    from src.training.tuning import compare_searches, run_search
+
+    with open(args.config) as f:
+        tune_cfg = yaml.safe_load(f)
+    overrides = {k: v for k, v in {"epochs": args.epochs, "num_workers": args.num_workers,
+                                   "limit_batches": args.limit_batches}.items()
+                 if v is not None}
+    methods = ["grid", "random"] if args.method == "both" else [args.method]
+    for method in methods:
+        run_search(method, tune_cfg, overrides)
+    compare_searches()
+
+
 def cmd_evaluate(args):
     from src.evaluation.metrics import confusion
     from src.training.trainer import evaluate_classifier
@@ -72,6 +86,16 @@ def main():
     train.add_argument('--limit-batches', type=int,
                        help='only run N batches per epoch (quick smoke test)')
     train.set_defaults(func=cmd_train)
+
+    tune = sub.add_parser('tune', help='grid / random hyperparameter search')
+    tune.add_argument('--task', required=True, choices=['classification'])
+    tune.add_argument('--config', required=True, help='e.g. configs/tune_scratch.yaml')
+    tune.add_argument('--method', default='both', choices=['grid', 'random', 'both'])
+    tune.add_argument('--epochs', type=int, help='override epochs for every trial')
+    tune.add_argument('--num-workers', type=int)
+    tune.add_argument('--limit-batches', type=int,
+                      help='only run N batches per epoch (quick smoke test)')
+    tune.set_defaults(func=cmd_tune)
 
     evaluate = sub.add_parser('evaluate', help='final metrics on the test set')
     evaluate.add_argument('--task', required=True, choices=['classification'])

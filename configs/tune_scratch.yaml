@@ -1,0 +1,17 @@
+# Hyperparameter search for the scratch CNN.
+# Both methods get the same budget (9 trials) and the same bounds, so the
+# comparison is fair: grid tries 3 fixed values per parameter, random draws
+# 9 different values per parameter from the same range.
+base: configs/cls_scratch.yaml
+experiment: tuning_scratch
+
+grid:
+  lr: [0.0003, 0.001, 0.003]
+  weight_decay: [0.0005, 0.005, 0.05]
+
+random:
+  n_trials: 9
+  seed: 0
+  space:
+    lr: {low: 0.0003, high: 0.003, log: true}
+    weight_decay: {low: 0.0005, high: 0.05, log: true}
