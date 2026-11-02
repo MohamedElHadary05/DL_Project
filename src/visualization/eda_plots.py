@@ -1,6 +1,7 @@
 from collections import Counter
 from pathlib import Path
 
+import re
 import matplotlib.pyplot as plt
 import pandas as pd
 from tqdm import tqdm
@@ -69,6 +70,49 @@ def plot_samples(ds, class_names, name, n=8):
     plt.savefig(OUT / f"samples_{name}.png", dpi=150)
     plt.close()
 
+def caption_eda(ds, name):
+    from src.data.dataset import split_captions
+
+    caps_per_image, all_caps = [], []
+    for desc in tqdm(ds["description"], desc=f"captions {name}"):
+        caps = split_captions(desc)
+        caps_per_image.append(len(caps))
+        all_caps.extend(caps)
+
+    lengths = [len(c.split()) for c in all_caps]
+    words = [w for c in all_caps for w in re.findall(r"[a-z']+", c.lower())]
+    vocab = Counter(words)
+    rare = [w for w, n in vocab.items() if n == 1]
+
+    print(f"[{name}] images={len(ds)} captions={len(all_caps)}")
+    print(f"[{name}] captions/image: {Counter(caps_per_image).most_common(5)}")
+    print(f"[{name}] length (words): min={min(lengths)} max={max(lengths)} "
+          f"mean={sum(lengths)/len(lengths):.1f}")
+    print(f"[{name}] vocab={len(vocab)} words appearing once={len(rare)}")
+    print(f"[{name}] top 15 words: {vocab.most_common(15)}")
+    print(f"[{name}] unique captions={len(set(all_caps))} "
+          f"duplicates={len(all_caps) - len(set(all_caps))}")
+    nonascii = [c for c in all_caps if re.search(r"[^\x00-\x7F]", c)]
+    print(f"[{name}] captions with non-ASCII chars={len(nonascii)}")
+    print(f"[{name}] 20 rare words (possible typos): {rare[:20]}")
+
+    plt.figure(figsize=(8, 4))
+    plt.hist(lengths, bins=40, edgecolor="black")
+    plt.title(f"Caption length in words ({name})")
+    plt.xlabel("words")
+    plt.ylabel("captions")
+    plt.tight_layout()
+    plt.savefig(OUT / f"caption_len_{name}.png", dpi=150)
+    plt.close()
+
+    top = vocab.most_common(25)
+    plt.figure(figsize=(10, 4))
+    plt.bar([w for w, _ in top], [n for _, n in top])
+    plt.xticks(rotation=70)
+    plt.title(f"Top 25 words ({name})")
+    plt.tight_layout()
+    plt.savefig(OUT / f"top_words_{name}.png", dpi=150)
+    plt.close()
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
@@ -81,6 +125,7 @@ def main():
         df = collect_image_stats(ds, name)
         plot_image_stats(df[df["ok"]], name)
         plot_samples(ds, class_names, name)
+        caption_eda(ds, name)
 
 
 if __name__ == "__main__":
