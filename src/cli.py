@@ -53,6 +53,15 @@ def cmd_evaluate(args):
     print(f"saved {plot_confusion(cm, out / f'{stem}_confusion.png', f'Test confusion: {stem}')}")
 
 
+def cmd_explain(args):
+    from src.visualization.gradcam import plot_comparison, plot_correct_wrong
+
+    for ckpt in args.checkpoint:
+        print(f"saved {plot_correct_wrong(ckpt, args.split, args.n, args.seed)}")
+    if len(args.checkpoint) > 1:
+        print(f"saved {plot_comparison(args.checkpoint, args.split, args.n, args.seed)}")
+
+
 def cmd_predict(args):
     import torch
     from PIL import Image
@@ -102,6 +111,15 @@ def main():
     evaluate.add_argument('--checkpoint', required=True)
     evaluate.add_argument('--limit-batches', type=int)
     evaluate.set_defaults(func=cmd_evaluate)
+
+    explain = sub.add_parser('explain', help='Grad-CAM heatmaps (correct vs wrong, model comparison)')
+    explain.add_argument('--task', required=True, choices=['classification'])
+    explain.add_argument('--checkpoint', required=True, nargs='+',
+                         help='one or more checkpoints; 2+ also makes a side-by-side comparison')
+    explain.add_argument('--split', default='val', choices=['val', 'test'])
+    explain.add_argument('--n', type=int, default=6, help='images per group')
+    explain.add_argument('--seed', type=int, default=0, help='which images get picked')
+    explain.set_defaults(func=cmd_explain)
 
     predict = sub.add_parser('predict', help='run a trained model on one image')
     predict.add_argument('--task', required=True, choices=['classification'])

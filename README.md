@@ -31,6 +31,11 @@ Inference on one image (top-5 species):
 
     python -m src.cli predict --task classification --image path/to/bird.jpg --checkpoint outputs/checkpoints/<run_name>.pt
 
+Grad-CAM heatmaps (correct vs wrong predictions per model; with 2+ checkpoints also a
+side-by-side comparison on the same images), saved to `outputs/gradcam/`:
+
+    python -m src.cli explain --task classification --checkpoint outputs/checkpoints/scratch.pt outputs/checkpoints/resnet18_finetune.pt
+
 ## Hyperparameter tuning
 
 Grid search and random search over the scratch CNN, same budget and bounds
