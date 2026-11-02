@@ -11,3 +11,4 @@ outputs/*
 /data/
 .DS_Store
 *.tgz
+mlflow.db
