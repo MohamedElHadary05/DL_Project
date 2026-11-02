@@ -1,0 +1,13 @@
+# Feature extraction: ResNet-18 encoder frozen, only the 200-class head trains.
+model: resnet18
+pretrained: true
+freeze_encoder: true
+image_size: 224
+batch_size: 32
+lr: 0.001
+weight_decay: 0.0001
+dropout: 0.3
+label_smoothing: 0.1
+epochs: 15
+num_workers: 2
+seed: 42

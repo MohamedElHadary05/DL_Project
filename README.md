@@ -8,6 +8,14 @@ Train (hyperparameters live in `configs/`, any of them can be overridden from th
 
     python -m src.cli train --task classification --config configs/cls_scratch.yaml
 
+Configs:
+
+| Config | Model | What trains |
+|---|---|---|
+| `configs/cls_scratch.yaml` | 5-block CNN, random init (baseline) | everything |
+| `configs/cls_transfer_frozen.yaml` | ResNet-18, ImageNet weights | only the 200-class head (feature extraction) |
+| `configs/cls_transfer.yaml` | ResNet-18, ImageNet weights | everything; encoder at 10x lower lr (fine-tuning) |
+
 Quick smoke test (3 batches per epoch, 2 epochs):
 
     python -m src.cli train --task classification --config configs/cls_scratch.yaml --epochs 2 --limit-batches 3 --run-name smoke

@@ -1,7 +1,14 @@
+# Fine-tuning: all ResNet-18 layers train, the pretrained encoder with a 10x smaller lr.
 model: resnet18
 pretrained: true
+freeze_encoder: false
 image_size: 224
 batch_size: 32
-lr: 0.0003
+lr: 0.001
+encoder_lr: 0.0001
+weight_decay: 0.0001
+dropout: 0.3
+label_smoothing: 0.1
 epochs: 15
+num_workers: 2
 seed: 42

@@ -1,4 +1,5 @@
 # build_model(name, cfg) -> swap encoders without touching the trainer
+from src.models.pretrained import ResNet18Encoder
 from src.models.scratch_cnn import Classifier, ScratchEncoder
 
 
@@ -7,9 +8,15 @@ def _scratch_cnn(cfg, num_classes):
     return Classifier(encoder, num_classes, dropout=cfg.get("dropout", 0.3))
 
 
-# Add transfer-learning models here (e.g. "resnet18") once pretrained.py exists.
+def _resnet18(cfg, num_classes):
+    encoder = ResNet18Encoder(pretrained=cfg.get("pretrained", True),
+                              freeze=cfg.get("freeze_encoder", False))
+    return Classifier(encoder, num_classes, dropout=cfg.get("dropout", 0.3))
+
+
 MODELS = {
     "scratch_cnn": _scratch_cnn,
+    "resnet18": _resnet18,
 }
 
 

@@ -28,6 +28,22 @@ def get_device():
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
+def build_optimizer(model, cfg):
+    """AdamW with two groups: the new head uses `lr`, the encoder `encoder_lr`.
+
+    Fine-tuning a pretrained encoder with a smaller lr keeps it from forgetting
+    its ImageNet features; frozen parameters are left out entirely.
+    """
+    head, encoder = [], []
+    for name, p in model.named_parameters():
+        if p.requires_grad:
+            (encoder if name.startswith("encoder.") else head).append(p)
+    groups = [{"params": head}]
+    if encoder:
+        groups.append({"params": encoder, "lr": cfg.get("encoder_lr", cfg["lr"])})
+    return torch.optim.AdamW(groups, lr=cfg["lr"], weight_decay=cfg.get("weight_decay", 0.0))
+
+
 def run_epoch(model, loader, criterion, device, optimizer=None, scaler=None,
               limit_batches=None):
     """One pass over `loader`. Trains if an optimizer is given, else evaluates.
@@ -73,8 +89,7 @@ def train_classifier(cfg, run_name=None):
     )
     model = build_model(cfg, len(class_names)).to(device)
     criterion = nn.CrossEntropyLoss(label_smoothing=cfg.get("label_smoothing", 0.0))
-    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg["lr"],
-                                  weight_decay=cfg.get("weight_decay", 0.0))
+    optimizer = build_optimizer(model, cfg)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=cfg["epochs"])
     scaler = torch.amp.GradScaler(enabled=device.type == "cuda")
     limit = cfg.get("limit_batches")
@@ -91,6 +106,8 @@ def train_classifier(cfg, run_name=None):
         mlflow.log_params({
             "device": device.type,
             "num_params": sum(p.numel() for p in model.parameters()),
+            "num_trainable_params": sum(p.numel() for p in model.parameters()
+                                        if p.requires_grad),
         })
 
         for epoch in range(1, cfg["epochs"] + 1):
