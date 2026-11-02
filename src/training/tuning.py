@@ -35,8 +35,13 @@ def random_trials(space, n_trials, seed=0):
     return [{k: sample(d, rng) for k, d in space.items()} for _ in range(n_trials)]
 
 
+def out_dir(tune_cfg):
+    """outputs/tuning, or outputs/tuning/<name> for a follow-up search with a `name`."""
+    return OUT / tune_cfg["name"] if "name" in tune_cfg else OUT
+
+
 def run_search(method, tune_cfg, overrides=None):
-    """Train one model per trial; results go to outputs/tuning/<method>_results.csv.
+    """Train one model per trial; results go to <out_dir>/<method>_results.csv.
 
     Trials already in the CSV are skipped, so a search killed mid-way
     (e.g. a Kaggle session timeout) continues where it stopped.
@@ -51,15 +56,17 @@ def run_search(method, tune_cfg, overrides=None):
         spec = tune_cfg["random"]
         trials = random_trials(spec["space"], spec["n_trials"], spec.get("seed", 0))
 
-    OUT.mkdir(parents=True, exist_ok=True)
-    csv_path = OUT / f"{method}_results.csv"
+    out = out_dir(tune_cfg)
+    out.mkdir(parents=True, exist_ok=True)
+    csv_path = out / f"{method}_results.csv"
     rows = pd.read_csv(csv_path).to_dict("records") if csv_path.exists() else []
     done = {r["trial"] for r in rows}
 
     for i, params in enumerate(trials):
         if i in done:
             continue
-        run_name = f"{method}_{i:02d}"
+        prefix = f"{tune_cfg['name']}_" if "name" in tune_cfg else ""
+        run_name = f"{prefix}{method}_{i:02d}"
         print(f"\n=== {run_name} ({i + 1}/{len(trials)}): {params}")
         cfg = {**base, **params, "experiment": tune_cfg.get("experiment", "tuning"),
                "tuning_method": method, "log_checkpoint": False}
@@ -76,12 +83,13 @@ def run_search(method, tune_cfg, overrides=None):
     return df
 
 
-def compare_searches():
+def compare_searches(tune_cfg=None):
     """Grid vs random: best score, trials, total time, and time to reach the best."""
     from src.visualization.tuning_plots import plot_best_so_far, plot_grid_heatmap
 
-    results = {m: pd.read_csv(OUT / f"{m}_results.csv")
-               for m in ("grid", "random") if (OUT / f"{m}_results.csv").exists()}
+    out = out_dir(tune_cfg or {})
+    results = {m: pd.read_csv(out / f"{m}_results.csv")
+               for m in ("grid", "random") if (out / f"{m}_results.csv").exists()}
     rows = []
     for method, df in results.items():
         df = df.sort_values("trial")
@@ -96,11 +104,11 @@ def compare_searches():
             "mean_val_accuracy": df.best_val_accuracy.mean(),
         })
     table = pd.DataFrame(rows)
-    table.to_csv(OUT / "comparison.csv", index=False)
+    table.to_csv(out / "comparison.csv", index=False)
     print(table.to_string(index=False, float_format=lambda x: f"{x:.3f}"))
 
-    plot_best_so_far(results, OUT / "best_so_far.png")
+    plot_best_so_far(results, out / "best_so_far.png")
     if "grid" in results:
-        plot_grid_heatmap(results["grid"], OUT / "grid_heatmap.png")
-    print(f"saved {OUT / 'comparison.csv'} and plots")
+        plot_grid_heatmap(results["grid"], out / "grid_heatmap.png")
+    print(f"saved {out / 'comparison.csv'} and plots")
     return table

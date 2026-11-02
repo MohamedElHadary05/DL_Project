@@ -33,7 +33,7 @@ def cmd_tune(args):
     methods = ["grid", "random"] if args.method == "both" else [args.method]
     for method in methods:
         run_search(method, tune_cfg, overrides)
-    compare_searches()
+    compare_searches(tune_cfg)
 
 
 def cmd_evaluate(args):

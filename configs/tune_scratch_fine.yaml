@@ -1,0 +1,10 @@
+# Coarse-to-fine follow-up to tune_scratch.yaml. The coarse grid found the
+# best lr (0.0003, val 0.392) at the low edge of its range and weight decay
+# barely mattered, so this extends lr downwards with weight decay fixed.
+base: configs/cls_scratch.yaml
+experiment: tuning_scratch
+name: fine
+
+grid:
+  lr: [0.0001, 0.00015, 0.0002]
+  weight_decay: [0.005]

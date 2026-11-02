@@ -1,0 +1,13 @@
+# Final scratch CNN: best lr / weight decay from tuning (configs/tune_scratch*.yaml),
+# trained for 60 epochs because the tuned runs were still improving at epoch 30.
+# If the fine search finds a better lr, update it here (or pass --lr).
+model: scratch_cnn
+image_size: 128
+batch_size: 64
+lr: 0.0003
+weight_decay: 0.005
+dropout: 0.3
+label_smoothing: 0.1
+epochs: 60
+num_workers: 2
+seed: 42
