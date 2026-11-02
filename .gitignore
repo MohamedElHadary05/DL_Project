@@ -8,5 +8,5 @@ outputs/*
 !outputs/.gitkeep
 *.pt
 *.pth
-data/
+/data/
 .DS_Store
