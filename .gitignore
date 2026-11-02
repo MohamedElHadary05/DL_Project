@@ -10,3 +10,4 @@ outputs/*
 *.pth
 /data/
 .DS_Store
+*.tgz
