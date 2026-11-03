@@ -61,7 +61,9 @@ Every run logs its config, per-epoch metrics, curves and checkpoint to MLflow. B
 
 ## Report
 
-The LaTeX report is in `report/` (`report.tex` + `figures/`). Rebuild the figures from
-`outputs/` and MLflow, then compile (e.g. upload the `report/` folder to Overleaf):
+The report is `report/report.docx` (a LaTeX version is in `report.tex`). Rebuild the
+figures from `outputs/` and MLflow, then the Word file (needs the `docx` npm package;
+open it in Word once to fill in the table of contents):
 
     python report/make_figures.py
+    node report/make_docx.js
