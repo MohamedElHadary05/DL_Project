@@ -12,3 +12,10 @@ outputs/*
 .DS_Store
 *.tgz
 mlflow.db
+
+# LaTeX build files
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.synctex.gz

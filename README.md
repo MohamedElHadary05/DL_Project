@@ -58,3 +58,10 @@ trials, so an interrupted search resumes where it stopped.
 Every run logs its config, per-epoch metrics, curves and checkpoint to MLflow. Browse them with:
 
     mlflow ui --backend-store-uri sqlite:///mlflow.db
+
+## Report
+
+The LaTeX report is in `report/` (`report.tex` + `figures/`). Rebuild the figures from
+`outputs/` and MLflow, then compile (e.g. upload the `report/` folder to Overleaf):
+
+    python report/make_figures.py
