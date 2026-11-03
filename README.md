@@ -27,6 +27,11 @@ Final evaluation on the test set (metrics JSON + confusion matrix in `outputs/ev
 
     python -m src.cli evaluate --task classification --checkpoint outputs/checkpoints/<run_name>.pt
 
+One table of every evaluated model (config, best val accuracy, test metrics) in
+`outputs/eval/model_comparison.csv`:
+
+    python -m src.cli compare --task classification
+
 Inference on one image (top-5 species):
 
     python -m src.cli predict --task classification --image path/to/bird.jpg --checkpoint outputs/checkpoints/<run_name>.pt

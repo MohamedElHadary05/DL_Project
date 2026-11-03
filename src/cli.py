@@ -53,6 +53,14 @@ def cmd_evaluate(args):
     print(f"saved {plot_confusion(cm, out / f'{stem}_confusion.png', f'Test confusion: {stem}')}")
 
 
+def cmd_compare(args):
+    from src.evaluation.summary import model_comparison
+
+    df, path = model_comparison()
+    print(df.to_string(index=False, float_format=lambda x: f"{x:.3f}"))
+    print(f"saved {path}")
+
+
 def cmd_explain(args):
     from src.visualization.gradcam import plot_comparison, plot_correct_wrong
 
@@ -111,6 +119,10 @@ def main():
     evaluate.add_argument('--checkpoint', required=True)
     evaluate.add_argument('--limit-batches', type=int)
     evaluate.set_defaults(func=cmd_evaluate)
+
+    compare = sub.add_parser('compare', help='table of all evaluated models (val + test metrics)')
+    compare.add_argument('--task', required=True, choices=['classification'])
+    compare.set_defaults(func=cmd_compare)
 
     explain = sub.add_parser('explain', help='Grad-CAM heatmaps (correct vs wrong, model comparison)')
     explain.add_argument('--task', required=True, choices=['classification'])
